@@ -13,6 +13,8 @@ def menu():
     5. Realizar compras.
     6. Leer desde formato JSON.
     7. Actualizar precios.
-    8. Salir""")
+    8. Agregar Marca.
+    9. Ingrese de que tipo de formato desea guardar el archivo (csv o json).
+    10. Salir""")
     opcion = input("Ingrese una opción: ")
     return opcion

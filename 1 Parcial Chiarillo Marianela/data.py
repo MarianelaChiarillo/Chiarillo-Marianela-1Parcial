@@ -7,7 +7,7 @@ import os
 def listar(lista: list[dict]): 
     lista = [] #lista vacia que va a pasar la funcion listar.
 
-    with open('C:\\Users\\mari\\Desktop\\1 Parcial\\insumos.csv', 'r', encoding='utf-8') as file: #importo mi ruta donde esta ubicado el archivo csv.
+    with open('C:\\Users\\mari\\Desktop\\1 Parcial Chiarillo Marianela\\insumos.csv', 'r', encoding='utf-8') as file: #importo mi ruta donde esta ubicado el archivo csv.
         for linea in file:
             linea = linea.strip().split(",") #se lee cada linea del archivo y con el strip se eliminan los espacios y con el split se divide en una lista de elementos con coma.
             if len(linea) == 5:  # Verificar que la línea tenga 5 elementos.
@@ -246,6 +246,105 @@ def leer_csv(ruta: str): #utilizo para leer el archivo con los precios actualiza
 
 #-----------------------------------------------------------------------------------------------------------------------------------
 
+def agregar_marca(marca:list)->str: #creo la funcion agregar marcas.
+    marcas = [] #lista para guardarlas.
+    with open("marcas.txt", "r") as file: #solo para tener el archivo disponible exporto su informacion.
+        for linea in file: #recorro y le hago sus respectivos cambios de formato.
+            marca = linea.strip()
+            marcas.append(marca)
+        return marcas
+
+def agregar_producto(lista:list[dict]): #creo la funcion para agregar los productos.
+    marcas = agregar_marca(lista)
+    print("Marcas con la que dispone--> ")
+    for i in range(len(marcas)): #itera sobre la lista de marcas y muestra cada marca junto al indice.
+        print(f"{i+1}.{marcas[i]}")
+    indice = None
+    while True: #Realizo esto para validar de que sea un numero y no otro caracter.
+        try:
+            indice = int(input("Ingrese el id del producto--> "))
+            break
+        except ValueError:
+            print("Ingrese un numero entero.")
+    marca = marcas[indice-1] #obtine la marca segun el indice.
+
+    for producto in lista:
+        if producto["MARCA"] == marca:
+            print("*La marca que ingreso ya se encuentra disponible.") #verifico si tengo la misma marca.
+            return
+        
+    producto_ingresado = { #ingreso todos los datos correspondientes al producto ingresado.
+        "ID": str(len(lista) + 1), "NOMBRE": input("Ingrese el nombre del producto--> ").upper(),"MARCA": marca.upper(),"PRECIO": float(input("Ingrese el precio del producto--> ")),"CARACTERISTICAS": [] #creo una lista vacia en caracteristicas asi verifico la cantidad.
+    }
+
+    caracteristicas = int(input("Ingrese cuantas caracteristicas desea ingresar--> ")) #ingreso cuantas caracteristicas.
+    if caracteristicas < 1 or caracteristicas > 3: #si la cantidad es menor o mayor a 3 muestro un mensaje.
+        print("*Lo siento, se excedio de caracteristicas.")
+    else:
+        for i in range(caracteristicas): #para cada caracteristica permito en un for ingresar el dato.
+            caracteristica = input("Ingrese las caracteristicas--> ").upper()
+            producto_ingresado["CARACTERISTICAS"].append(caracteristica)
+
+        lista.append(producto_ingresado) #integro esas caracteristicas y las muestro.
+        print("**Ya se realizo la carga**")
+            
+#------------------------------------------------------------------------------------------------------------------------------------
+
+def guardar_producto_nuevo(lista:list[dict], opcion): #creo la funcion para mostrar el archivo.
+
+    if opcion == "csv nuevo": #dependiendo la opcion que elija el usuario lo voy printear.
+       archivo = guardar_producto_csv(lista_insumos)
+       print(archivo)
+    
+    elif opcion == "agregar al csv":
+        archivo = agregar_producto_csv(lista_insumos)
+        print(archivo)
+    
+    elif opcion == "json nuevo":
+        archivo = guardar_producto_json(lista_insumos)
+        print(archivo)
+
+    elif opcion == "agregar al json":
+        archivo = agregar_producto_json(lista_insumos)
+        print(archivo)
+    else:
+        print("Reingrese en que formato lo desea: 'csv' o 'json'--> ")
+
+#hago diversos tipos de guardados de archivo en "w" para escribir uno o "a" para juntarlo a otro.
+
+def agregar_producto_csv(lista_insumos:list):
+    with open('insumos.csv', 'a') as file: #abro el file en formato csv ya existente con toda la informacion de los productos previos.
+        for producto in lista_insumos:
+            linea = f"{producto['ID']},{producto['NOMBRE']},{producto['MARCA']},{producto['PRECIO']},{producto['CARACTERISTICAS']}\n"
+            file.write(linea)
+    print("Datos guardados en formato CSV.") #esto solo agregaria la informacion
+
+
+def guardar_producto_csv(lista_insumos:list):
+    with open('archivoNuevo.csv', 'w') as file: #abro un file en formato csv con la nueva informacion ingresada.
+        file.write(f"ID, NOMBRE, MARCA, PRECIO, CARACTERISTICAS")
+        for producto in lista_insumos:
+            linea = f"{producto['ID']},{producto['NOMBRE']},{producto['MARCA']},{producto['PRECIO']},{producto['CARACTERISTICAS']}\n"
+            file.write(linea)
+    print("Datos guardados en formato CSV.")
+
+
+def agregar_producto_json(lista_insumos:list):
+    with open('insumos_alimento.json', 'a') as file: #abro el file en formato json ya existente para que solo se agregue la informacion.
+        json.dump(lista_insumos, file)
+        file.write('\n')
+    print("Datos guardados en formato Json.")
+
+
+def guardar_producto_json(lista_insumos:list):
+    with open('archivo.json', 'w') as file: #abro un nuevo file en formato json con la nueva infomarcion.
+        for producto in lista_insumos:
+            json.dump(lista_insumos, file)
+            file.write('\n')
+    print("Datos guardados en formato Json.")
+        
+#-------------------------------------------------------------------------------------------------------------
+#Hago todas las llamadas para el menu en base al número de opcion.
 flag_bienvenida = False
 while True:
     os.system("cls")
@@ -311,8 +410,22 @@ while True:
             #         leer_csv(ruta_actualizada)
                 else:
                     print("Debe poner confirmar para saber más información.")
-        
             case "8":
+                if flag_bienvenida:
+                    lista_insumos = []
+                    agregar_producto(lista_insumos)
+                
+                else:
+                    print("Debe poner confirmar para saber más información.")
+
+            case "9":
+                if flag_bienvenida:
+                    opcion = input("Ingrese el tipo de dato de formato en el que quiere guardar: csv nuevo, json nuevo, agregar al csv o agregar al json--> ")
+                    guardar_producto_nuevo(lista_insumos, opcion)
+                else:
+                    print("Debe poner confirmar para saber más información.")
+        
+            case "10":
                  salir = input("confirma salida? s/n: ")
                  if(salir == "s"):
                      break
